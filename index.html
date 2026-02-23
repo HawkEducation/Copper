@@ -2,150 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>COPPER & GEAR v3.1</title>
+    <title>COPPER v3.6</title>
     <style>
-        :root { --copper: #d48841; --brass: #a67c00; --bg: #1a120b; --power: #00ff41; --error: #ff5252; }
-        body {
-            background-color: var(--bg);
-            background-image: radial-gradient(circle at 50% 50%, #2c1e12 8%, transparent 8.5%);
-            background-size: 80px 80px;
-            color: var(--copper); font-family: 'Courier New', monospace;
-            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
-        }
-        #main-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; width: 95%; max-width: 1300px; }
-        #workstation { border: 6px solid #3e2723; background: rgba(15, 10, 5, 0.95); padding: 20px; border-radius: 10px; position: relative; }
-        
-        /* Input Overlay */
-        #input-panel {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #000; border: 3px double var(--brass); padding: 20px;
-            display: none; z-index: 100; box-shadow: 0 0 50px #000; text-align: center;
-        }
-        #panel-field { background: #111; border: 1px solid var(--copper); color: var(--power); padding: 10px; margin-top: 10px; outline: none; width: 200px; }
-
-        #hardware-rack { background: #050505; border: 4px solid #3e2723; padding: 20px; height: 650px; overflow-y: auto; }
-        .rack-label { text-align: center; color: var(--brass); border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
-        
-        .battery-unit { border: 2px solid #555; padding: 10px; margin-bottom: 20px; background: #111; }
-        .cell-container { display: flex; gap: 4px; height: 30px; }
-        .cell { flex: 1; border: 1px solid #333; background: #000; }
-        .cell.filled { background: var(--power); box-shadow: 0 0 10px var(--power); }
-
-        #gauge-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 2px solid #5d4037; padding: 10px; background: #000; }
-        #pressure-bar { width: 60%; height: 20px; background: #222; border: 1px solid var(--copper); }
-        #pressure-fill { width: 0%; height: 100%; background: linear-gradient(to right, #d48841, #ff5252); transition: width 0.5s; }
-
-        textarea { width: 100%; height: 250px; background: #000; color: #ffab40; border: 1px solid #5d4037; padding: 15px; font-size: 14px; box-sizing: border-box; }
-        #console { margin-top: 15px; height: 150px; overflow-y: auto; background: #000; border: 1px inset #5d4037; padding: 10px; color: #a5d6a7; font-size: 12px; }
-        
-        .waiting { animation: pulse-red 1s infinite; }
-        @keyframes pulse-red { 0% { color: var(--power); } 50% { color: var(--error); } 100% { color: var(--power); } }
+        body { background: #1a120b; color: #d48841; font-family: monospace; padding: 20px; }
+        #main-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+        #workstation { border: 2px solid #3e2723; padding: 15px; background: #000; }
+        #hardware-rack { border: 2px solid #3e2723; padding: 15px; background: #050505; height: 500px; overflow-y: auto; }
+        textarea { width: 100%; height: 200px; background: #000; color: #ffab40; border: 1px solid #3e2723; padding: 10px; }
+        #console { height: 150px; overflow-y: auto; background: #000; color: #a5d6a7; border: 1px inset #3e2723; margin-top: 10px; padding: 10px; }
+        .unit { border-left: 3px solid #d48841; padding: 5px; margin-bottom: 10px; background: #111; }
+        #input-overlay { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; border: 2px solid #d48841; padding: 20px; z-index: 1000; }
     </style>
 </head>
 <body>
 
-<div id="input-panel">
-    <div style="font-size: 12px; color: var(--brass);">CONTROL PANEL: INPUT VOLTAGE</div>
-    <input type="text" id="panel-field" autocomplete="off">
-    <div style="font-size: 10px; margin-top: 5px; color: #666;">PRESS ENTER TO INJECT</div>
+<div id="input-overlay">
+    <div>REGULATOR INPUT:</div>
+    <input type="text" id="manual-in" style="background:#000; color:#00ff41; border:1px solid #d48841; padding:5px; margin-top:10px;">
 </div>
 
 <div id="main-grid">
     <div id="workstation">
-        <header style="text-align:center; margin-bottom:10px;">⚙️ COPPER & GEAR v3.1 ⚡</header>
-        <div id="gauge-container">
-            <span>PRESSURE</span>
-            <div id="pressure-bar"><div id="pressure-fill"></div></div>
-            <span id="psi">0 PSI</span>
-        </div>
+        <div style="margin-bottom:10px;">PSI: <span id="psi">0</span></div>
         <textarea id="editor" spellcheck="false">
-Wire CPU msg = "Awaiting Operator...";
-Volt msg;
+Wire RAM volts = Regulator;
 
-Wire RAM user_input = Regulator;
+Pulse 3 {
+    Volt volts;
+}
 
-Volt "Current Injected:";
-Volt user_input;
 Flow;</textarea>
-        <button id="ignite-btn" onclick="ignite()" style="width:100%; padding:15px; background:var(--copper); border:none; cursor:pointer; font-weight:bold;">IGNITE PULSE</button>
+        <button onclick="ignite()" style="width:100%; padding:10px; background:#d48841; color:#000; border:none; cursor:pointer; font-weight:bold;">IGNITE</button>
         <div id="console"></div>
     </div>
-
-    <div id="hardware-rack">
-        <div class="rack-label">--- COMPONENT BAY ---</div>
-        <div id="rack-content"></div>
-    </div>
+    <div id="hardware-rack"></div>
 </div>
 
 <script>
-    let hardware = { wires: {}, batteries: {}, pressure: 0 };
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let resolveInput;
-
-    function playSound(type) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        if (type === 'clank') { osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
-        else if (type === 'hiss') { /* White noise logic */ }
-    }
-
-    async function getManualInput() {
-        const panel = document.getElementById('input-panel');
-        const field = document.getElementById('panel-field');
-        panel.style.display = 'block';
-        field.focus();
-        
-        return new Promise(resolve => {
-            field.onkeydown = (e) => {
-                if (e.key === 'Enter') {
-                    panel.style.display = 'none';
-                    let val = field.value;
-                    field.value = '';
-                    resolve(val);
-                }
-            };
-        });
-    }
-
-    function renderHardware() {
-        const rack = document.getElementById('rack-content');
-        rack.innerHTML = "";
-        for (let name in hardware.wires) {
-            rack.innerHTML += `<div style="border-left:3px solid var(--copper); padding:5px; margin-bottom:5px; background:#111;"><b>${name}:</b> ${hardware.wires[name]}</div>`;
+    let hardware = { wires: {}, pressure: 0 };
+    
+    function execute(cmd) {
+        if (!cmd) return;
+        const con = document.getElementById('console');
+        if (cmd.startsWith('Volt ')) {
+            let target = cmd.replace('Volt ', '').replace(/"/g, '').trim();
+            // Output raw value only
+            con.innerHTML += `${hardware.wires[target] !== undefined ? hardware.wires[target] : target}<br>`;
+        } else if (cmd === 'Flow') {
+            hardware.pressure = 0;
         }
     }
 
     async function ignite() {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const lines = document.getElementById('editor').value.split(';');
+        const code = document.getElementById('editor').value;
+        const lines = code.split(';');
         const con = document.getElementById('console');
-        
-        for (let line of lines) {
-            let cmd = line.trim();
+        con.innerHTML = "";
+        hardware.wires = {};
+
+        for (let i = 0; i < lines.length; i++) {
+            let cmd = lines[i].trim();
             if (!cmd) continue;
 
             if (cmd.includes('= Regulator')) {
-                con.innerHTML += `<span class="waiting">>> SYSTEM HALTED: OPERATOR INPUT REQUIRED</span><br>`;
-                let val = await getManualInput();
-                let wireName = cmd.split(' ')[2];
-                hardware.wires[wireName] = val;
-                playSound('clank');
-            } else if (cmd.startsWith('Wire ')) {
-                let m = cmd.match(/Wire (\w+) (\w+) = (.*)/);
-                hardware.wires[m[2]] = m[3].replace(/"/g, '');
-            } else if (cmd.startsWith('Volt ')) {
-                let target = cmd.replace('Volt ', '').trim().replace(/"/g, '');
-                let out = hardware.wires[target] || target;
-                con.innerHTML += `<span>> VOLT: ${out}</span><br>`;
-            } else if (cmd === 'Flow') {
-                hardware.pressure = 0;
-                document.getElementById('pressure-fill').style.width = '0%';
+                const overlay = document.getElementById('input-overlay');
+                const field = document.getElementById('manual-in');
+                overlay.style.display = 'block'; field.focus();
+                let val = await new Promise(r => {
+                    field.onkeydown = (e) => { if(e.key==='Enter') { overlay.style.display='none'; r(field.value); field.value=''; }};
+                });
+                hardware.wires[cmd.split(' ')[2]] = val;
+            } 
+            else if (cmd.startsWith('Pulse')) {
+                let countMatch = cmd.match(/Pulse (\d+)/);
+                let bodyMatch = cmd.match(/\{([\s\S]*)\}/);
+                if (countMatch && bodyMatch) {
+                    let count = parseInt(countMatch[1]);
+                    let loopBody = bodyMatch[1].split(';');
+                    for(let c=0; c<count; c++) {
+                        for(let lcmd of loopBody) execute(lcmd.trim());
+                    }
+                }
             }
-            renderHardware();
-            con.scrollTop = con.scrollHeight;
-            await new Promise(r => setTimeout(r, 100));
+            else { execute(cmd); }
+            render();
         }
+    }
+
+    function render() {
+        const rack = document.getElementById('hardware-rack');
+        rack.innerHTML = "";
+        for (let w in hardware.wires) {
+            rack.innerHTML += `<div class="unit"><b>${w}:</b> ${hardware.wires[w]}</div>`;
+        }
+        document.getElementById('psi').innerText = hardware.pressure;
     }
 </script>
 </body>
