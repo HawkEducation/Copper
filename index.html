@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>COPPER v1.9</title>
+    <title>COPPER & GEAR v2.0</title>
     <style>
         body {
             background-color: #1a120b;
@@ -26,14 +26,8 @@
             margin-bottom: 15px; border: 2px solid #5d4037; padding: 10px; background: #0a0a0a;
         }
 
-        #pressure-bar {
-            width: 70%; height: 20px; background: #222; border: 1px solid #d48841;
-        }
-
-        #pressure-fill {
-            width: 0%; height: 100%; background: linear-gradient(to right, #d48841, #ff5252);
-            transition: width 0.5s;
-        }
+        #pressure-bar { width: 70%; height: 20px; background: #222; border: 1px solid #d48841; }
+        #pressure-fill { width: 0%; height: 100%; background: linear-gradient(to right, #d48841, #ff5252); transition: width 0.5s; }
 
         textarea {
             width: 100%; height: 300px; background: #050505; color: #ffab40;
@@ -43,7 +37,7 @@
         #console {
             margin-top: 20px; height: 200px; overflow-y: auto;
             background: #000; border: 2px inset #5d4037; padding: 15px;
-            color: #a5d6a7; font-size: 14px; transition: filter 0.5s;
+            color: #a5d6a7; font-size: 14px; transition: filter 0.3s;
         }
 
         .controls { display: flex; gap: 10px; margin-top: 15px; }
@@ -54,7 +48,7 @@
 <body>
 
 <div id="workstation">
-    <header style="text-align:center; margin-bottom:10px;">⚙️ COPPER & GEAR v1.9 ⚡</header>
+    <header style="text-align:center; margin-bottom:10px;">⚙️ COPPER & GEAR v2.0 ⚡</header>
     
     <div id="gauge-container">
         <span>STEAM PRESSURE</span>
@@ -68,7 +62,7 @@ Gear combine();
 Wire RAM alpha = 200;
 Wire RAM beta = 300;
 
-// Engaging the gears
+// Engaging the gear for fused power
 Wire RAM fused = combine(alpha, beta);
 
 Volt "Total Output:";
@@ -97,16 +91,14 @@ Volt cells;</textarea>
         let color = type === "error" ? "#ff5252" : (type === "system" ? "#ffab40" : "#a5d6a7");
         con.innerHTML += `<span>[${new Date().toLocaleTimeString()}] ${msg}</span><br>`;
         con.scrollTop = con.scrollHeight;
-        
-        // Steam Fog Effect
-        con.style.filter = `blur(${hardware.pressure / 20}px)`;
+        con.style.filter = `blur(${hardware.pressure / 25}px)`;
     }
 
     function updatePressure(amt) {
         hardware.pressure = Math.min(hardware.pressure + amt, 100);
         document.getElementById('pressure-fill').style.width = hardware.pressure + "%";
         document.getElementById('psi').innerText = hardware.pressure + " PSI";
-        if(hardware.pressure >= 80) log("⚠️ CRITICAL PRESSURE: VENT STEAM IMMEDIATELY", "error");
+        if(hardware.pressure >= 85) log("⚠️ CRITICAL PRESSURE: VENT STEAM", "error");
     }
 
     function ventSteam() {
@@ -124,46 +116,72 @@ Volt cells;</textarea>
             if (!cmd || cmd.startsWith("//")) return;
 
             try {
+                // GEAR REGISTRATION
                 if (cmd.startsWith('Gear ')) {
-                    let name = cmd.match(/Gear (\w+)/)[1];
-                    hardware.gears[name] = true;
-                    log(`⚙️ Gear '${name}' mounted.`, "system");
+                    let nameMatch = cmd.match(/Gear (\w+)/);
+                    if(nameMatch) {
+                        hardware.gears[nameMatch[1]] = true;
+                        log(`⚙️ Gear '${nameMatch[1]}' mounted.`, "system");
+                    }
                 }
+                // BATTERY DEFINITION
                 else if (cmd.startsWith('Battery ')) {
                     let match = cmd.match(/Battery (\w+) (RAM|ROM|CPU) (\w+) = \[(.*)\]/);
                     if (match) {
                         let [_, size, type, name, vals] = match;
                         let data = vals.split(',').map(v => v.trim());
                         if (data.length > hardware.types[size]) throw `Overcharge! Max ${hardware.types[size]} for ${size}`;
-                        hardware.batteries[name] = { data };
+                        hardware.batteries[name] = { data: data, type: type };
                         updatePressure(10);
                         log(`🔋 ${size} Battery '${name}' charged.`, "system");
                     }
                 }
+                // WIRE & GEAR CALLS
                 else if (cmd.startsWith('Wire ')) {
                     let match = cmd.match(/Wire (RAM|ROM|CPU) (\w+) = (.*)/);
                     if (match) {
                         let [_, type, name, expr] = match;
                         let val;
+
                         if (expr.includes('(')) {
                             let gName = expr.split('(')[0].trim();
-                            let params = expr.match(/\((.*)\)/)[1].split(',').map(p => hardware.wires[p.trim()] || Number(p));
-                            if (gName === 'combine') val = params[0] + params[1];
+                            let paramsMatch = expr.match(/\((.*)\)/);
+                            let params = paramsMatch[1].split(',').map(p => {
+                                let pName = p.trim();
+                                return hardware.wires[pName] !== undefined ? hardware.wires[pName] : Number(pName);
+                            });
+
+                            if (gName === 'combine') val = params.reduce((a, b) => a + b, 0);
                             updatePressure(15);
-                            log(`⚙️ Gear '${gName}' spun.`, "system");
+                            log(`⚙️ Gear '${gName}' spinning...`, "system");
                         } else {
-                            val = type === "CPU" ? expr.replace(/"/g, '') : eval(expr);
+                            // Direct Assignment
+                            let cleanExpr = expr.trim();
+                            if (hardware.wires[cleanExpr] !== undefined) {
+                                val = hardware.wires[cleanExpr];
+                            } else {
+                                val = type === "CPU" ? cleanExpr.replace(/"/g, '') : eval(cleanExpr);
+                            }
                         }
-                        if (type === "RAM" && isNaN(parseInt(val))) throw `Short Circuit on '${name}'!`;
+
+                        if (type === "RAM" && isNaN(parseInt(val))) throw `Short Circuit! RAM requires numeric current.`;
                         hardware.wires[name] = val;
                         log(`⚡ Wire '${name}' energized.`, "system");
                     }
                 }
+                // VOLT (The Output)
                 else if (cmd.startsWith('Volt ')) {
                     let target = cmd.replace('Volt ', '').trim();
-                    let val = hardware.wires[target] !== undefined ? hardware.wires[target] : 
-                              (hardware.batteries[target] ? `[${hardware.batteries[target].data.join('|')}]` : target.replace(/"/g, ''));
-                    log(`VOLTAGE: ${val}`);
+                    let finalOut;
+
+                    if (hardware.wires[target] !== undefined) {
+                        finalOut = hardware.wires[target];
+                    } else if (hardware.batteries[target]) {
+                        finalOut = `[${hardware.batteries[target].data.join(' | ')}]`;
+                    } else {
+                        finalOut = target.replace(/"/g, '');
+                    }
+                    log(`VOLTAGE: ${finalOut}`);
                 }
             } catch (e) {
                 log(`💥 ERROR: ${e}`, "error");
