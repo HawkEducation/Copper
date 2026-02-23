@@ -2,191 +2,183 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>COPPER & GEAR v2.0</title>
+    <title>COPPER & GEAR v2.8</title>
     <style>
+        :root { --copper: #d48841; --brass: #a67c00; --bg: #1a120b; --power: #00ff41; }
         body {
-            background-color: #1a120b;
-            background-image: 
-                radial-gradient(circle at 50% 50%, #2c1e12 8%, transparent 8.5%),
-                linear-gradient(to right, #24190e 1px, transparent 1px),
-                linear-gradient(to bottom, #24190e 1px, transparent 1px);
-            background-size: 100px 100px, 20px 20px, 20px 20px;
-            color: #d48841; font-family: 'Courier New', monospace;
-            display: flex; flex-direction: column; align-items: center; padding: 20px;
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% 50%, #2c1e12 8%, transparent 8.5%);
+            background-size: 80px 80px;
+            color: var(--copper); font-family: 'Courier New', monospace;
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
+        }
+        #main-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; width: 95%; max-width: 1300px; }
+        #workstation { border: 6px solid #3e2723; background: rgba(15, 10, 5, 0.95); padding: 20px; border-radius: 10px; }
+        
+        /* The Hardware Rack */
+        #hardware-rack {
+            background: #050505; border: 4px solid #3e2723; padding: 20px;
+            height: 650px; overflow-y: auto; box-shadow: inset 0 0 20px #000;
+        }
+        .rack-label { text-align: center; color: var(--brass); border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* Battery Visuals */
+        .battery-unit {
+            border: 2px solid #555; padding: 10px; margin-bottom: 20px; background: #111;
+            position: relative; border-radius: 4px;
+        }
+        .battery-header { font-size: 12px; margin-bottom: 8px; color: var(--brass); display: flex; justify-content: space-between; }
+        .cell-container { display: flex; gap: 4px; height: 30px; }
+        .cell {
+            flex: 1; border: 1px solid #333; background: #000;
+            box-shadow: inset 0 0 5px rgba(0,255,65,0.1);
+        }
+        .cell.filled {
+            background: var(--power);
+            box-shadow: 0 0 10px var(--power);
+        }
+        
+        /* Wire Visuals */
+        .wire-unit {
+            border-left: 3px solid var(--copper); padding: 5px 10px; margin-bottom: 10px;
+            background: rgba(212, 136, 65, 0.05); font-size: 13px;
         }
 
-        #workstation {
-            width: 90%; max-width: 1000px;
-            border: 8px solid #3e2723; background: rgba(15, 10, 5, 0.95);
-            padding: 30px; border-radius: 10px; box-shadow: 0 0 30px #000;
-        }
-
-        #gauge-container {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; border: 2px solid #5d4037; padding: 10px; background: #0a0a0a;
-        }
-
-        #pressure-bar { width: 70%; height: 20px; background: #222; border: 1px solid #d48841; }
+        #gauge-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 2px solid #5d4037; padding: 10px; background: #000; }
+        #pressure-bar { width: 60%; height: 20px; background: #222; border: 1px solid var(--copper); }
         #pressure-fill { width: 0%; height: 100%; background: linear-gradient(to right, #d48841, #ff5252); transition: width 0.5s; }
 
-        textarea {
-            width: 100%; height: 300px; background: #050505; color: #ffab40;
-            border: 2px solid #5d4037; padding: 15px; font-size: 16px; box-sizing: border-box;
-        }
-
-        #console {
-            margin-top: 20px; height: 200px; overflow-y: auto;
-            background: #000; border: 2px inset #5d4037; padding: 15px;
-            color: #a5d6a7; font-size: 14px; transition: filter 0.3s;
-        }
-
-        .controls { display: flex; gap: 10px; margin-top: 15px; }
-        button { flex: 1; background: #d48841; color: #1a120b; border: none; padding: 12px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #ffab40; }
+        textarea { width: 100%; height: 300px; background: #000; color: #ffab40; border: 1px solid #5d4037; padding: 15px; font-size: 14px; box-sizing: border-box; }
+        #console { margin-top: 15px; height: 150px; overflow-y: auto; background: #000; border: 1px inset #5d4037; padding: 10px; color: #a5d6a7; font-size: 12px; }
+        
+        .controls { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; background: var(--copper); color: #1a120b; border: none; padding: 12px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="workstation">
-    <header style="text-align:center; margin-bottom:10px;">⚙️ COPPER & GEAR v2.0 ⚡</header>
-    
-    <div id="gauge-container">
-        <span>STEAM PRESSURE</span>
-        <div id="pressure-bar"><div id="pressure-fill"></div></div>
-        <span id="psi">0 PSI</span>
+<div id="main-grid">
+    <div id="workstation">
+        <header style="text-align:center; margin-bottom:10px;">⚙️ COPPER & GEAR v2.8: PHYSICAL SPAWN ⚡</header>
+        <div id="gauge-container">
+            <span>PSI GAUGE</span>
+            <div id="pressure-bar"><div id="pressure-fill"></div></div>
+            <span id="psi">0 PSI</span>
+        </div>
+        <textarea id="editor" spellcheck="false">
+// Spawn three different battery types
+Battery AAA RAM miner = [10, 20, 30];
+Battery AA RAM heavy = [1, 2, 3, 4, 5];
+Battery C RAM grid = [100, 200];
+
+Wire CPU status = "Components Loaded";
+Volt status;
+
+Flow;</textarea>
+        <div class="controls">
+            <button onclick="ignite()">IGNITE PULSE</button>
+            <button onclick="ventSteam()">FLOW</button>
+        </div>
+        <div id="console"></div>
     </div>
 
-    <textarea id="editor" spellcheck="false">
-Gear combine();
-
-Wire RAM alpha = 200;
-Wire RAM beta = 300;
-
-// Engaging the gear for fused power
-Wire RAM fused = combine(alpha, beta);
-
-Volt "Total Output:";
-Volt fused;
-
-// Charging a heavy battery
-Battery AA RAM cells = [10, 20, 30, 40, 50];
-Volt cells;</textarea>
-
-    <div class="controls">
-        <button onclick="ignite()">IGNITE PULSE</button>
-        <button onclick="ventSteam()">VENT STEAM</button>
+    <div id="hardware-rack">
+        <div class="rack-label">--- COMPONENT BAY ---</div>
+        <div id="rack-content"></div>
     </div>
-
-    <div id="console"></div>
 </div>
 
 <script>
     let hardware = { 
-        wires: {}, gears: {}, batteries: {}, pressure: 0,
-        types: { 'Coin': 1, 'AAA': 3, 'AA': 5, 'C': 10, 'D': 20, '9V': 50 }
+        wires: {}, 
+        batteries: {}, 
+        pressure: 0, 
+        types: { 'AAA': 3, 'AA': 5, 'C': 10, 'D': 20 } 
     };
 
-    function log(msg, type = "info") {
+    function renderHardware() {
+        const rack = document.getElementById('rack-content');
+        rack.innerHTML = "";
+
+        // Render Batteries
+        for (let name in hardware.batteries) {
+            let b = hardware.batteries[name];
+            let cellsHTML = "";
+            for(let i=0; i < b.capacity; i++) {
+                let isFilled = i < b.data.length;
+                cellsHTML += `<div class="cell ${isFilled ? 'filled' : ''}"></div>`;
+            }
+            
+            rack.innerHTML += `
+                <div class="battery-unit">
+                    <div class="battery-header">
+                        <span>[${b.size}] ${name}</span>
+                        <span>${b.data.length}/${b.capacity}</span>
+                    </div>
+                    <div class="cell-container">${cellsHTML}</div>
+                </div>`;
+        }
+
+        // Render Wires
+        for (let name in hardware.wires) {
+            rack.innerHTML += `
+                <div class="wire-unit">
+                    <b>WIRE:</b> ${name} <br>
+                    <span style="color:#888;">CURR: ${hardware.wires[name]}</span>
+                </div>`;
+        }
+    }
+
+    function log(msg) {
         const con = document.getElementById('console');
-        let color = type === "error" ? "#ff5252" : (type === "system" ? "#ffab40" : "#a5d6a7");
-        con.innerHTML += `<span>[${new Date().toLocaleTimeString()}] ${msg}</span><br>`;
+        con.innerHTML += `<span>> ${msg}</span><br>`;
         con.scrollTop = con.scrollHeight;
-        con.style.filter = `blur(${hardware.pressure / 25}px)`;
     }
 
     function updatePressure(amt) {
-        hardware.pressure = Math.min(hardware.pressure + amt, 100);
+        hardware.pressure = Math.max(0, Math.min(hardware.pressure + amt, 100));
         document.getElementById('pressure-fill').style.width = hardware.pressure + "%";
         document.getElementById('psi').innerText = hardware.pressure + " PSI";
-        if(hardware.pressure >= 85) log("⚠️ CRITICAL PRESSURE: VENT STEAM", "error");
+        document.getElementById('workstation').style.filter = `blur(${hardware.pressure / 40}px)`;
     }
 
-    function ventSteam() {
-        hardware.pressure = 0;
-        updatePressure(0);
-        log("💨 Steam vented. System clear.", "system");
-    }
+    function ventSteam() { hardware.pressure = 0; updatePressure(0); log("Venting steam..."); }
 
     function ignite() {
-        const code = document.getElementById('editor').value;
-        const lines = code.split(';');
+        hardware.wires = {}; hardware.batteries = {}; // Flush bay for new pulse
+        const lines = document.getElementById('editor').value.split(';');
         
         lines.forEach(line => {
             let cmd = line.trim();
-            if (!cmd || cmd.startsWith("//")) return;
+            if (!cmd) return;
 
             try {
-                // GEAR REGISTRATION
-                if (cmd.startsWith('Gear ')) {
-                    let nameMatch = cmd.match(/Gear (\w+)/);
-                    if(nameMatch) {
-                        hardware.gears[nameMatch[1]] = true;
-                        log(`⚙️ Gear '${nameMatch[1]}' mounted.`, "system");
+                if (cmd.startsWith('Battery ')) {
+                    let m = cmd.match(/Battery (\w+) (\w+) (\w+) = \[(.*)\]/);
+                    if (m) {
+                        let [_, size, type, name, vals] = m;
+                        let data = vals ? vals.split(',').map(v => v.trim()) : [];
+                        hardware.batteries[name] = { size, data, capacity: hardware.types[size] };
+                        updatePressure(15);
+                        log(`Charged ${size} Battery: ${name}`);
                     }
                 }
-                // BATTERY DEFINITION
-                else if (cmd.startsWith('Battery ')) {
-                    let match = cmd.match(/Battery (\w+) (RAM|ROM|CPU) (\w+) = \[(.*)\]/);
-                    if (match) {
-                        let [_, size, type, name, vals] = match;
-                        let data = vals.split(',').map(v => v.trim());
-                        if (data.length > hardware.types[size]) throw `Overcharge! Max ${hardware.types[size]} for ${size}`;
-                        hardware.batteries[name] = { data: data, type: type };
-                        updatePressure(10);
-                        log(`🔋 ${size} Battery '${name}' charged.`, "system");
-                    }
-                }
-                // WIRE & GEAR CALLS
                 else if (cmd.startsWith('Wire ')) {
-                    let match = cmd.match(/Wire (RAM|ROM|CPU) (\w+) = (.*)/);
-                    if (match) {
-                        let [_, type, name, expr] = match;
-                        let val;
-
-                        if (expr.includes('(')) {
-                            let gName = expr.split('(')[0].trim();
-                            let paramsMatch = expr.match(/\((.*)\)/);
-                            let params = paramsMatch[1].split(',').map(p => {
-                                let pName = p.trim();
-                                return hardware.wires[pName] !== undefined ? hardware.wires[pName] : Number(pName);
-                            });
-
-                            if (gName === 'combine') val = params.reduce((a, b) => a + b, 0);
-                            updatePressure(15);
-                            log(`⚙️ Gear '${gName}' spinning...`, "system");
-                        } else {
-                            // Direct Assignment
-                            let cleanExpr = expr.trim();
-                            if (hardware.wires[cleanExpr] !== undefined) {
-                                val = hardware.wires[cleanExpr];
-                            } else {
-                                val = type === "CPU" ? cleanExpr.replace(/"/g, '') : eval(cleanExpr);
-                            }
-                        }
-
-                        if (type === "RAM" && isNaN(parseInt(val))) throw `Short Circuit! RAM requires numeric current.`;
-                        hardware.wires[name] = val;
-                        log(`⚡ Wire '${name}' energized.`, "system");
+                    let m = cmd.match(/Wire (\w+) (\w+) = (.*)/);
+                    if (m) {
+                        hardware.wires[m[2]] = m[3].replace(/"/g, '');
+                        updatePressure(5);
+                        log(`Energized Wire: ${m[2]}`);
                     }
                 }
-                // VOLT (The Output)
                 else if (cmd.startsWith('Volt ')) {
                     let target = cmd.replace('Volt ', '').trim();
-                    let finalOut;
-
-                    if (hardware.wires[target] !== undefined) {
-                        finalOut = hardware.wires[target];
-                    } else if (hardware.batteries[target]) {
-                        finalOut = `[${hardware.batteries[target].data.join(' | ')}]`;
-                    } else {
-                        finalOut = target.replace(/"/g, '');
-                    }
-                    log(`VOLTAGE: ${finalOut}`);
+                    log("VOLT: " + (hardware.wires[target] || target));
                 }
-            } catch (e) {
-                log(`💥 ERROR: ${e}`, "error");
-            }
+                else if (cmd === 'Flow') ventSteam();
+            } catch (e) { log("ERR: " + e); }
         });
+        renderHardware();
     }
 </script>
 </body>
